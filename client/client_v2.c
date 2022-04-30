@@ -10,6 +10,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+/*****User libs*****/
+#include "./include/at.c"
+#include "./include/manager.c"
+#include "./include/file.c"
+#include "./include/listuser.c"
+#include "./include/private.c"
+
 /*****Define*****/
 #define MAXLINE 80
 #define SERV_ADDR "101.42.141.88"
@@ -71,8 +78,28 @@ int main(int argc, char *argv[])
 	{ //父进程：发送用户输入的信息
 		while (fgets(buf, MAXLINE, stdin) != NULL)
 		{
-			write(sockfd, buf, MAXLINE);
-			memset(buf, 0, sizeof(buf));
+			if (strcmp(buf, "/downfile") == 0)
+			{
+				downfile(buf);
+			}
+			else if (strcmp(buf, "/upfile") == 0)
+			{
+				upfile(buf);
+			}
+			else if (strcmp(buf, "/private") == 0)
+			{
+				private_chat(buf);
+			}
+			else if (strcmp(buf, "/quit") == 0)
+			{
+				close(sockfd);
+				exit(0);
+			}
+			else
+			{
+				write(sockfd, buf, MAXLINE);
+				memset(buf, 0, sizeof(buf));
+			}
 		}
 
 		close(sockfd);

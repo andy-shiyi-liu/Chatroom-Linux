@@ -1,0 +1,3 @@
+void at(char *buf)
+{
+}

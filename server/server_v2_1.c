@@ -24,14 +24,26 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
+/*****Declaration of functions*****/
+void *service_thread(void *useri);
+void delete_tail_enter(char *string);
+void send2all(char *msg, int current_id);
+
 /*****Custom libraries*****/
-#include "server_v2.h"
+#include "./include/server_v2.h"
+#include "./include/at.c"
+#include "./include/manager.c"
+#include "./include/file.c"
+#include "./include/listuser.c"
+#include "./include/private.c"
 
 /*****Define*****/
 #define VERSION "2.1"
 #define MAXLINE 80	   // buf的容量
 #define SERV_PORT 8000 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
+#define true 1
+#define false 0
 
 /*****Extern Variables*****/
 struct userinfo users[MAXCAPACITY]; //结构体变量users储存已连接用户的昵称和ip地址
@@ -40,11 +52,6 @@ int userid = 1;						//用户id，只递增，用户退出时不递减
 int connfd;
 struct sockaddr_in cliaddr;
 socklen_t cliaddr_len;
-
-/*****Declaration of functions*****/
-void *service_thread(void *useri);
-void delete_tail_enter(char *string);
-void send2all(char *msg, int current_id);
 
 /*****main*****/
 int main()
@@ -134,7 +141,8 @@ void *service_thread(void *useri)
 			sprintf(BrdMsg, "User %s has quit, uid=%d", users[i].name, users[i].id); //将要发送的信息输入到BrdMsg字符数组
 
 			printf("LOGOUT:\tUser:%s\tIP:%s\tID:%d\n", users[i].name, users[i].ip, users[i].id); //打印至服务器端屏幕
-			send2all(BrdMsg, 0);																 //发送到每个客户
+
+			send2all(BrdMsg, 0); //发送到每个客户
 
 			users[i].id = 0; //清除当前用户id
 			usernum--;
@@ -143,9 +151,50 @@ void *service_thread(void *useri)
 		}
 
 		delete_tail_enter(buf);
-		printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-		sprintf(BrdMsg, "%s:\t%s\n", users[i].name, buf);
-		send2all(BrdMsg, users[i].id);
+		if (users[i].ban == true)
+		{
+			// todo: prompt user that he is banned
+			continue;
+		}
+
+		if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
+		{
+			at(buf);
+		}
+		else if (strcmp(buf, "/upfile") == 0) // upload file to server
+		{
+			upfile(buf);
+		}
+		else if (strcmp(buf, "/downfile") == 0) // download file to local
+		{
+			downfile(buf);
+		}
+		else if (strcmp(buf, "/kick") == 0) // kick s.b. out
+		{
+			kick(buf);
+		}
+		else if (strcmp(buf, "/ban") == 0) // ban s.b.
+		{
+			ban(buf);
+		}
+		else if (strcmp(buf, "/unban") == 0) // unban s.b.
+		{
+			unban(buf);
+		}
+		else if (buf[0] == '&') // private chat e.p. "&syl <messsage>"
+		{
+			private_chat(buf);
+		}
+		else if (strcmp(buf, "/listuser") == 0)
+		{
+			listuser(buf);
+		}
+		else
+		{
+			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
+			sprintf(BrdMsg, "%s:\t%s\n", users[i].name, buf);
+			send2all(BrdMsg, users[i].id);
+		}
 	}
 }
 
