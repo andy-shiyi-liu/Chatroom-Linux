@@ -167,7 +167,7 @@ void *service_thread(void *useri)
 		if (users[i].ban == true)
 		{
 			// todo: prompt user that he is banned
-			strcpy(buf, "You are banned now!");
+			strcpy(buf, "\033[31mYou are banned now!\033[37m");
 			write(users[i].fd, buf, MAXLINE);
 			continue;
 		}

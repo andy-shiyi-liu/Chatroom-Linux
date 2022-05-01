@@ -19,7 +19,7 @@ void kick(char *buf, const int uid, char *BrdMsg)
     // check that password is correct
     if (strcmp(buf, MANAGER_PASSWD) != 0)
     {
-        strcpy(buf, "WRONG password!");
+        strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
         return;
     }
@@ -38,25 +38,25 @@ void kick(char *buf, const int uid, char *BrdMsg)
             int threadCancelState = pthread_cancel(users[i].tid);
             if (threadCancelState != 0)
             {
-                strcpy(buf, "Thead cancel wrong");
+                strcpy(buf, "\033[31mThead cancel wrong\033[37m");
                 write(users[uid].fd, buf, MAXLINE);
                 return;
             }
 
-            strcpy(buf, "You have been kicked. Bye.");
+            strcpy(buf, "\033[31mYou have been kicked. Bye.\033[37m");
             write(users[i].fd, buf, MAXLINE);
 
             if (close(users[i].fd) != 0)
             {
-                strcpy(buf, "Socket close wrong");
+                strcpy(buf, "\033[31mSocket close wrong\033[37m");
                 write(users[uid].fd, buf, MAXLINE);
                 return;
             }
 
-            sprintf(buf, "Kicked user '%s', uid is %d", users[i].name, users[i].id);
+            sprintf(buf, "\033[31mKicked user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
             printf("LOG: user %s kicked user %s", users[uid].name, users[i].name);
-            sprintf(BrdMsg, "User %s kicked user %s", users[uid].name, users[i].name);
+            sprintf(BrdMsg, "\033[31mUser %s kicked user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
 
             // set user info to init state
@@ -72,7 +72,7 @@ void kick(char *buf, const int uid, char *BrdMsg)
     }
 
     // user not found
-    sprintf(buf, "User with name '%s' NOT found.", buf);
+    sprintf(buf, "\033[31mUser with name '%s' NOT found.\033[37m", buf);
     write(users[uid].fd, buf, MAXLINE);
 }
 
@@ -93,7 +93,7 @@ void ban(char *buf, const int uid, char *BrdMsg)
     // check that password is correct
     if (strcmp(buf, MANAGER_PASSWD) != 0)
     {
-        strcpy(buf, "WRONG password!");
+        strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
         return;
     }
@@ -110,17 +110,17 @@ void ban(char *buf, const int uid, char *BrdMsg)
         if (strcmp(buf, users[i].name) == 0)
         {
             users[i].ban = true;
-            sprintf(buf, "Banned user '%s', uid is %d", users[i].name, users[i].id);
+            sprintf(buf, "\033[31mBanned user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
-            printf("LOG: user %s banned user %s", users[uid].name, users[i].name);
-            sprintf(BrdMsg, "User %s banned user %s", users[uid].name, users[i].name);
+            printf("\033[31mLOG: user %s banned user %s\033[37m", users[uid].name, users[i].name);
+            sprintf(BrdMsg, "\033[31mUser %s banned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
             return;
         }
     }
 
     // user not found
-    sprintf(buf, "User with name '%s' NOT found.", buf);
+    sprintf(buf, "\033[31mUser with name '%s' NOT found.\033[37m", buf);
     write(users[uid].fd, buf, MAXLINE);
 }
 
@@ -141,7 +141,7 @@ void unban(char *buf, const int uid, char *BrdMsg)
     // check that password is correct
     if (strcmp(buf, MANAGER_PASSWD) != 0)
     {
-        strcpy(buf, "WRONG password!");
+        strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
         return;
     }
@@ -158,16 +158,16 @@ void unban(char *buf, const int uid, char *BrdMsg)
         if (strcmp(buf, users[i].name) == 0)
         {
             users[i].ban = false;
-            sprintf(buf, "Unbanned user '%s', uid is %d", users[i].name, users[i].id);
+            sprintf(buf, "\033[31mUnbanned user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
-            printf("LOG: user %s unbanned user %s", users[uid].name, users[i].name);
-            sprintf(BrdMsg, "User %s unbanned user %s", users[uid].name, users[i].name);
+            printf("\033[31mLOG: user %s unbanned user %s\033[37m", users[uid].name, users[i].name);
+            sprintf(BrdMsg, "\033[31mUser %s unbanned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
             return;
         }
     }
 
     // user not found
-    sprintf(buf, "User with name '%s' NOT found.", buf);
+    sprintf(buf, "\033[31mUser with name '%s' NOT found.\033[37m", buf);
     write(users[uid].fd, buf, MAXLINE);
 }
