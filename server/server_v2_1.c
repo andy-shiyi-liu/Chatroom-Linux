@@ -128,23 +128,25 @@ void *service_thread(void *useri)
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
 	//提示用户设定昵称，并存储
-	strcpy(buf, "Designate Your User Name:");
+	strcpy(buf, "Designate Your User Name: ");
 	write(users[i].fd, buf, MAXLINE);
+	memset(buf, 0, sizeof(char) * MAXLINE);
 	read(users[i].fd, buf, MAXLINE); //接收用户传来的昵称名信息
 
 	strcpy(users[i].name, buf);
 	delete_tail_enter(users[i].name); // users.name
 
-	strcpy(users[i].ip, inet_ntoa(cliaddr.sin_addr)); // users.ip
-
+	strcpy(users[i].ip, inet_ntoa(cliaddr.sin_addr));									// users.ip
 	printf("LOGIN:\tUser:%s\tIP:%s\tID:%d\n", users[i].name, users[i].ip, users[i].id); //服务器端打印登录用户的信息
 
 	//广播当前用户进入聊天室的信息
+	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	sprintf(BrdMsg, "%s has entered the chatroom, uid=%d", users[i].name, users[i].id);
 	send2all(BrdMsg, users[i].id); //将有名字的版本发给其他用户
+	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	sprintf(BrdMsg, "You have entered the chatroom, uid=%d", users[i].id);
 	write(users[i].fd, BrdMsg, MAXLINE); //将“你”称呼的版本发给当前用户
-
+	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	while (1)
 	{
 		n = read(users[i].fd, buf, MAXLINE);
@@ -154,7 +156,9 @@ void *service_thread(void *useri)
 
 			printf("LOGOUT:\tUser:%s\tIP:%s\tID:%d\n", users[i].name, users[i].ip, users[i].id); //打印至服务器端屏幕
 
-			send2all(BrdMsg, 0); //发送到每个客户
+			send2all(BrdMsg, users[i].id); //发送到每个客户
+			memset(buf, 0, sizeof(char) * MAXLINE);
+			memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 
 			users[i].id = 0; //清除当前用户id
 			usernum--;
@@ -183,6 +187,8 @@ void *service_thread(void *useri)
 				// todo: prompt user that he is banned
 				strcpy(buf, "\033[31mYou are banned now!\033[37m");
 				write(users[i].fd, buf, MAXLINE);
+				memset(buf, 0, sizeof(char) * MAXLINE);
+				memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 				continue;
 			}
 		}
@@ -225,13 +231,16 @@ void *service_thread(void *useri)
 			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
 			send2all(BrdMsg, users[i].id);
 		}
+		memset(buf, 0, sizeof(char) * MAXLINE);
+		memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	}
 }
 
 // delete_tail_enter删除读取buf时读入的字符串末尾回车
 void delete_tail_enter(char *string)
 {
-	string[strlen(string) - 1] = 0;
+	if (string[strlen(string) - 1] == '\n')
+		string[strlen(string) - 1] = 0;
 }
 
 // send2all:

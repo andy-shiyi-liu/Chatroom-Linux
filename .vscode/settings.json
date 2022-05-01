@@ -1,7 +1,0 @@
-{
-  "files.associations": {
-    "manager.h": "c",
-    "pthread.h": "c",
-    "inet.h": "c"
-  }
-}

@@ -13,6 +13,7 @@ void kick(char *buf, const int uid, char *BrdMsg)
     // ask and receive manager passwd
     strcpy(buf, "Please input manager password.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -21,12 +22,14 @@ void kick(char *buf, const int uid, char *BrdMsg)
     {
         strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
+        memset(buf, 0, sizeof(char) * MAXLINE);
         return;
     }
 
     // ask for user information to be kicked
     strcpy(buf, "Please input the name of the user to be kicked.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -58,6 +61,8 @@ void kick(char *buf, const int uid, char *BrdMsg)
             printf("\033[31mLOG: user %s kicked user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s kicked user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
+            memset(buf, 0, sizeof(char) * MAXLINE);
+            memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 
             // set user info to init state
             users[i].fd = 0;
@@ -87,6 +92,7 @@ void ban(char *buf, const int uid, char *BrdMsg)
     // ask and receive manager passwd
     strcpy(buf, "Please input manager password.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -95,12 +101,15 @@ void ban(char *buf, const int uid, char *BrdMsg)
     {
         strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
+        memset(buf, 0, sizeof(char) * MAXLINE);
         return;
     }
 
     // ask for user information to be banned
     strcpy(buf, "Please input the name of the user to be banned.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
+
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -115,6 +124,7 @@ void ban(char *buf, const int uid, char *BrdMsg)
             printf("\033[31mLOG: user %s banned user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s banned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
+            memset(BrdMsg, 0, sizeof(char) * MAXLINE);
             return;
         }
     }
@@ -122,6 +132,7 @@ void ban(char *buf, const int uid, char *BrdMsg)
     // user not found
     sprintf(buf, "\033[31mUser with name '%s' NOT found.\033[37m", buf);
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
 }
 
 void unban(char *buf, const int uid, char *BrdMsg)
@@ -135,6 +146,8 @@ void unban(char *buf, const int uid, char *BrdMsg)
     // ask and receive manager passwd
     strcpy(buf, "Please input manager password.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
+
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -143,12 +156,14 @@ void unban(char *buf, const int uid, char *BrdMsg)
     {
         strcpy(buf, "\033[31mWRONG password!\033[37m");
         write(users[uid].fd, buf, MAXLINE);
+        memset(buf, 0, sizeof(char) * MAXLINE);
         return;
     }
 
     // ask for user information to be unbanned
     strcpy(buf, "Please input the name of the user to be unbanned.");
     write(users[uid].fd, buf, MAXLINE);
+    memset(buf, 0, sizeof(char) * MAXLINE);
     read(users[uid].fd, buf, MAXLINE);
     delete_tail_enter(buf);
 
@@ -163,6 +178,8 @@ void unban(char *buf, const int uid, char *BrdMsg)
             printf("\033[31mLOG: user %s unbanned user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s unbanned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
+            memset(buf, 0, sizeof(char) * MAXLINE);
+            memset(BrdMsg, 0, sizeof(char) * MAXLINE);
             return;
         }
     }
