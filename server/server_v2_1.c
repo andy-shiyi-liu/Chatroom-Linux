@@ -31,7 +31,7 @@ void send2all(char *msg, int current_id);
 /*****Define*****/
 #define VERSION "2.1"
 #define MAXLINE 80	   // buf的容量
-#define SERV_PORT 8000 //服务器端口号
+#define SERV_PORT 8061 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
 #define true 1
 #define false 0
@@ -146,7 +146,10 @@ void *service_thread(void *useri)
 	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	sprintf(BrdMsg, "You have entered the chatroom, uid=%d", users[i].id);
 	write(users[i].fd, BrdMsg, MAXLINE); //将“你”称呼的版本发给当前用户
+
 	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
+	memset(buf, 0, sizeof(char) * MAXLINE);
+
 	while (1)
 	{
 		n = read(users[i].fd, buf, MAXLINE);

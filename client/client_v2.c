@@ -20,7 +20,7 @@
 /*****Define*****/
 #define MAXLINE 80
 #define SERV_ADDR "101.42.141.88"
-#define SERV_PORT 8000
+#define SERV_PORT 8061
 #define MAXNAME 20
 
 /*****Declaration of functions*****/
