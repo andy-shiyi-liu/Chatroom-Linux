@@ -148,7 +148,6 @@ void *service_thread(void *useri)
 	while (1)
 	{
 		n = read(users[i].fd, buf, MAXLINE);
-		printf("receive message");
 		if (n == 0)
 		{
 			sprintf(BrdMsg, "User %s has quit, uid=%d", users[i].name, users[i].id); //将要发送的信息输入到BrdMsg字符数组
@@ -166,13 +165,28 @@ void *service_thread(void *useri)
 		delete_tail_enter(buf);
 		if (users[i].ban == true)
 		{
-			// todo: prompt user that he is banned
-			strcpy(buf, "\033[31mYou are banned now!\033[37m");
-			write(users[i].fd, buf, MAXLINE);
-			continue;
+			// allow another to unban himself
+			if (strcmp(buf, "/kick") == 0) // kick s.b. out
+			{
+				kick(buf, i, BrdMsg);
+			}
+			else if (strcmp(buf, "/ban") == 0) // ban s.b.
+			{
+				ban(buf, i, BrdMsg);
+			}
+			else if (strcmp(buf, "/unban") == 0) // unban s.b.
+			{
+				unban(buf, i, BrdMsg);
+			}
+			else // if not manager commands
+			{
+				// todo: prompt user that he is banned
+				strcpy(buf, "\033[31mYou are banned now!\033[37m");
+				write(users[i].fd, buf, MAXLINE);
+				continue;
+			}
 		}
-
-		if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
+		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
 		{
 			at(buf);
 		}
@@ -206,6 +220,7 @@ void *service_thread(void *useri)
 		}
 		else
 		{
+			printf("receive message: ");
 			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
 			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
 			send2all(BrdMsg, users[i].id);

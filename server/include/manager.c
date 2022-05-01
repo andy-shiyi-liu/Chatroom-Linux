@@ -55,7 +55,7 @@ void kick(char *buf, const int uid, char *BrdMsg)
 
             sprintf(buf, "\033[31mKicked user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
-            printf("LOG: user %s kicked user %s", users[uid].name, users[i].name);
+            printf("\033[31mLOG: user %s kicked user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s kicked user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
 
@@ -112,7 +112,7 @@ void ban(char *buf, const int uid, char *BrdMsg)
             users[i].ban = true;
             sprintf(buf, "\033[31mBanned user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
-            printf("\033[31mLOG: user %s banned user %s\033[37m", users[uid].name, users[i].name);
+            printf("\033[31mLOG: user %s banned user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s banned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
             return;
@@ -160,7 +160,7 @@ void unban(char *buf, const int uid, char *BrdMsg)
             users[i].ban = false;
             sprintf(buf, "\033[31mUnbanned user '%s', uid is %d\033[37m", users[i].name, users[i].id);
             write(users[uid].fd, buf, MAXLINE);
-            printf("\033[31mLOG: user %s unbanned user %s\033[37m", users[uid].name, users[i].name);
+            printf("\033[31mLOG: user %s unbanned user %s\n\033[37m", users[uid].name, users[i].name);
             sprintf(BrdMsg, "\033[31mUser %s unbanned user %s\033[37m", users[uid].name, users[i].name);
             send2all(BrdMsg, users[uid].id);
             return;
