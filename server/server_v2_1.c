@@ -31,7 +31,7 @@ void send2all(char *msg, int current_id);
 /*****Define*****/
 #define VERSION "2.1"
 #define MAXLINE 80	   // buf的容量
-#define SERV_PORT 8061 //服务器端口号
+#define SERV_PORT 8000 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
 #define true 1
 #define false 0
