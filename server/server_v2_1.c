@@ -22,20 +22,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <pthread.h>
 
 /*****Declaration of functions*****/
 void *service_thread(void *useri);
 void delete_tail_enter(char *string);
 void send2all(char *msg, int current_id);
-
-/*****Custom libraries*****/
-#include "./include/server_v2.h"
-#include "./include/at.c"
-#include "./include/manager.c"
-#include "./include/file.c"
-#include "./include/listuser.c"
-#include "./include/private.c"
 
 /*****Define*****/
 #define VERSION "2.1"
@@ -44,6 +35,14 @@ void send2all(char *msg, int current_id);
 #define MAXCAPACITY 30 //聊天室最大用户数量
 #define true 1
 #define false 0
+
+/*****Custom libraries*****/
+#include "./include/server_v2.h"
+#include "./include/manager.c"
+#include "./include/at.c"
+#include "./include/file.c"
+#include "./include/listuser.c"
+#include "./include/private.c"
 
 /*****Extern Variables*****/
 struct userinfo users[MAXCAPACITY]; //结构体变量users储存已连接用户的昵称和ip地址
@@ -64,6 +63,10 @@ int main()
 
 	// socket
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+
+	// reuse socket.
+	int opt = 1;
+	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
 	//配置服务器地址
 	bzero(&servaddr, sizeof(servaddr));
@@ -93,13 +96,16 @@ int main()
 		else
 		{
 			pthread_t tid;
+			int temp_uid;
 
 			usernum++;
 
 			for (i = 0; i < MAXCAPACITY && users[i].id != 0; i++)
 				; //查找空闲的用户信息存储位置
+			temp_uid = i;
 			//创建新线程tid
 			pthread_create(&tid, 0, service_thread, &i); //把当前user的所有信息的序号i的地址传入service_thread函数
+			users[temp_uid].tid = tid;					 // 记录用户对应的线程信息
 		}
 	}
 }
@@ -108,14 +114,20 @@ int main()
 // service_thread:收取该线程对应用户端的信息，调用send2all函数发送至其他所有用户，并在服务器端显示
 void *service_thread(void *useri)
 {
-	int i = *(int *)useri;
+	const int i = *(int *)useri;
 	int n;
 	char buf[MAXLINE], BrdMsg[MAXLINE]; // BrdMsg存储需要广播的信息
 
 	//用户信息配置
 	users[i].fd = connfd;	// users.fd
 	users[i].id = userid++; // users.id 从1开始编号users.id,id=0表示空
-							//提示用户设定昵称，并存储
+	users[i].ban = false;
+
+	// 为了实现踢出功能，在这里设置线程属性为接受其他线程取消此线程，并在接受到取消请求时立即退出
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+
+	//提示用户设定昵称，并存储
 	strcpy(buf, "Designate Your User Name:");
 	write(users[i].fd, buf, MAXLINE);
 	read(users[i].fd, buf, MAXLINE); //接收用户传来的昵称名信息
@@ -136,6 +148,7 @@ void *service_thread(void *useri)
 	while (1)
 	{
 		n = read(users[i].fd, buf, MAXLINE);
+		printf("receive message");
 		if (n == 0)
 		{
 			sprintf(BrdMsg, "User %s has quit, uid=%d", users[i].name, users[i].id); //将要发送的信息输入到BrdMsg字符数组
@@ -154,6 +167,8 @@ void *service_thread(void *useri)
 		if (users[i].ban == true)
 		{
 			// todo: prompt user that he is banned
+			strcpy(buf, "You are banned now!");
+			write(users[i].fd, buf, MAXLINE);
 			continue;
 		}
 
@@ -171,15 +186,15 @@ void *service_thread(void *useri)
 		}
 		else if (strcmp(buf, "/kick") == 0) // kick s.b. out
 		{
-			kick(buf);
+			kick(buf, i, BrdMsg);
 		}
 		else if (strcmp(buf, "/ban") == 0) // ban s.b.
 		{
-			ban(buf);
+			ban(buf, i, BrdMsg);
 		}
 		else if (strcmp(buf, "/unban") == 0) // unban s.b.
 		{
-			unban(buf);
+			unban(buf, i, BrdMsg);
 		}
 		else if (buf[0] == '&') // private chat e.p. "&syl <messsage>"
 		{
@@ -192,7 +207,7 @@ void *service_thread(void *useri)
 		else
 		{
 			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-			sprintf(BrdMsg, "%s:\t%s\n", users[i].name, buf);
+			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
 			send2all(BrdMsg, users[i].id);
 		}
 	}
