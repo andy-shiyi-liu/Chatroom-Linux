@@ -53,6 +53,12 @@ void kick(char *buf, const int uid, char *BrdMsg)
                 return;
             }
 
+            sprintf(buf, "Kicked user '%s', uid is %d", users[i].name, users[i].id);
+            write(users[uid].fd, buf, MAXLINE);
+            printf("LOG: user %s kicked user %s", users[uid].name, users[i].name);
+            sprintf(BrdMsg, "User %s kicked user %s", users[uid].name, users[i].name);
+            send2all(BrdMsg, users[uid].id);
+
             // set user info to init state
             users[i].fd = 0;
             users[i].name[0] = 0;
@@ -61,11 +67,6 @@ void kick(char *buf, const int uid, char *BrdMsg)
             users[i].id = 0;
             users[i].tid = 0;
 
-            sprintf(buf, "Kicked user '%s', uid is %d", users[i].name, users[i].id);
-            write(users[uid].fd, buf, MAXLINE);
-            printf("LOG: user %s kicked user %s", users[uid].name, users[i].name);
-            sprintf(BrdMsg, "User %s kicked user %s", users[uid].name, users[i].name);
-            send2all(BrdMsg, users[uid].id);
             return;
         }
     }
