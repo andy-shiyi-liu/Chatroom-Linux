@@ -4,7 +4,7 @@ all: client server
 # gcc -o $@ $^
 	
 server: server_v2_1.c ./include/server_v2.h
-	gcc -w -pthread -o $@ $^
+	gcc -Wall -o $@ $^ -lpthread
 
 clean:
 	rm -f server client
