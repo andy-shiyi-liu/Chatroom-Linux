@@ -58,7 +58,7 @@ void at(char *buf, const int uid, char *BrdMsg)
 
     for (int i = 0; i < MAXCAPACITY; i++)
     {
-        if (i == uid)
+        if (i == uid || users[i].id == 0)
             continue;
         else if (users[i].at)
         {
@@ -66,7 +66,7 @@ void at(char *buf, const int uid, char *BrdMsg)
         }
         else
         {
-            sprintf(BrdMsg, "\033[37m%s:\t%s\033", users[uid].name, buf);
+            sprintf(BrdMsg, "%s:\t%s", users[uid].name, buf);
         }
 
         write(users[i].fd, BrdMsg, MAXLINE);
