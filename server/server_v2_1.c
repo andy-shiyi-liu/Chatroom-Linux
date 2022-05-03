@@ -117,11 +117,13 @@ void *service_thread(void *useri)
 	const int i = *(int *)useri;
 	int n;
 	char buf[MAXLINE], BrdMsg[MAXLINE]; // BrdMsg存储需要广播的信息
+	int repeated_name = true;
 
 	//用户信息配置
 	users[i].fd = connfd;	// users.fd
 	users[i].id = userid++; // users.id 从1开始编号users.id,id=0表示空
 	users[i].ban = false;
+	users[i].name[0] = 0; // init user name
 
 	// 为了实现踢出功能，在这里设置线程属性为接受其他线程取消此线程，并在接受到取消请求时立即退出
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
@@ -132,9 +134,28 @@ void *service_thread(void *useri)
 	write(users[i].fd, buf, MAXLINE);
 	memset(buf, 0, sizeof(char) * MAXLINE);
 	read(users[i].fd, buf, MAXLINE); //接收用户传来的昵称名信息
+	delete_tail_enter(buf);
+
+	while (repeated_name == true)
+	{
+		repeated_name = false;
+		for (int j = 0; j < MAXCAPACITY; j++)
+		{
+			if (strcmp(buf, users[j].name) == 0) // 如果重名 提示重新指定名称
+			{
+				repeated_name = true;
+				memset(buf, 0, sizeof(char) * MAXLINE);
+				strcpy(buf, "Name Repeated, redesignate your name: ");
+				write(users[i].fd, buf, MAXLINE);
+				memset(buf, 0, sizeof(char) * MAXLINE);
+				read(users[i].fd, buf, MAXLINE); //接收用户传来的昵称名信息
+				delete_tail_enter(buf);
+				break;
+			}
+		}
+	}
 
 	strcpy(users[i].name, buf);
-	delete_tail_enter(users[i].name); // users.name
 
 	strcpy(users[i].ip, inet_ntoa(cliaddr.sin_addr));									// users.ip
 	printf("LOGIN:\tUser:%s\tIP:%s\tID:%d\n", users[i].name, users[i].ip, users[i].id); //服务器端打印登录用户的信息
