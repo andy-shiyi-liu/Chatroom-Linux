@@ -121,6 +121,8 @@ int main()
 // service_thread:收取该线程对应用户端的信息，调用send2all函数发送至其他所有用户，并在服务器端显示
 void *service_thread(void *useri)
 {
+	int upfile_1st = 1, downfile_1st = 1;
+
 	const int i = *(int *)useri;
 	int n;
 	char buf[MAXLINE], BrdMsg[MAXLINE]; // BrdMsg存储需要广播的信息
@@ -241,13 +243,17 @@ void *service_thread(void *useri)
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{
-			write(users[i].fd, "CONTINUE", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
+			if (upfile_1st == 1)
+				write(users[i].fd, "CONTINUE_UP", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
 			upfile(i);
+			upfile_1st = 0;
 		}
 		else if (strcmp(buf, "/downfile") == 0) // download file to local
 		{
-			write(users[i].fd, "CONTINUE", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
+			if (downfile_1st == 1)
+				write(users[i].fd, "CONTINUE_DOWN", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
 			downfile(i);
+			downfile_1st = 0;
 		}
 		else if (strcmp(buf, "/listfile") == 0) //向客户端发送文件列表
 		{

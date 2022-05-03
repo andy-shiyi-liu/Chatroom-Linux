@@ -7,4 +7,4 @@ client: client_v2.c
 # 	gcc -w -pthread -o $@ $^
 
 clean:
-	rm -f client_v2 client_v2_t
+	rm -f client_v2

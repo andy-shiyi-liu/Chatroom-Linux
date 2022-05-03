@@ -4,4 +4,4 @@ client/client_v2
 client/files/
 server/files/
 .vscode/
-files/
+/client/local

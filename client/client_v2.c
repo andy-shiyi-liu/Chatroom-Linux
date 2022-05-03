@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		//如果客户端处于上传文件或下载状态，则将对应标志置1，客户端暂停接收并显示信息
+		// bzero(buf_read, MAXLINE);
 		if ((download == 1) || (upload == 1))
 			continue;
 		n = read(sockfd, buf_read, MAXLINE);
@@ -90,13 +91,13 @@ void *service_thread(void *p)
 		if (strcmp(buf_write, "/downfile") == 0)
 		{
 			download = 1;
-			downfile(buf_write);
+			downfile();
 			download = 0;
 		}
 		else if (strcmp(buf_write, "/upfile") == 0)
 		{
 			upload = 1;
-			upfile(buf_write);
+			upfile();
 			upload = 0;
 		}
 		else if (strcmp(buf_write, "/private") == 0)
