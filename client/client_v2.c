@@ -1,5 +1,5 @@
 /*****client.c*****/
-// 1. 多进程：父进程用于发送客户端输入的信息，子进程用于接受服务器端发送的信息
+//多线程
 
 /*****System libraries*****/
 #include <stdio.h>
@@ -9,6 +9,18 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+
+/*****Define*****/
+#define MAXLINE 80
+#define SERV_ADDR "127.0.0.1"
+#define SERV_PORT 8000
+#define MAXNAME 20
+
+/*****Extern Variables*****/
+int sockfd;
+int download, upload;
+char buf_read[MAXLINE], buf_write[MAXLINE];
 
 /*****User libs*****/
 #include "./include/at.c"
@@ -24,13 +36,13 @@
 #define MAXNAME 20
 
 /*****Declaration of functions*****/
+void *service_thread(void *);
 
 /*****main*****/
 int main(int argc, char *argv[])
 {
 	struct sockaddr_in servaddr;
-	char buf[MAXLINE];
-	int sockfd, n;
+	int n;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -42,69 +54,72 @@ int main(int argc, char *argv[])
 	connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
 	// read服务器发出的输入用户昵称的信息
-	read(sockfd, buf, MAXLINE);
-	printf("%s", buf);
+	read(sockfd, buf_read, MAXLINE);
+	printf("%s", buf_read);
 	//输入用户昵称并发送
-	fgets(buf, MAXLINE, stdin);
-	while (strlen(buf) - 1 > 20)
+	fgets(buf_read, MAXLINE, stdin);
+	while (strlen(buf_read) - 1 > 20)
 	{
 		printf("Your name is too long!(>20)\n");
-		fgets(buf, MAXLINE, stdin);
+		fgets(buf_read, MAXLINE, stdin);
 	}
-	write(sockfd, buf, MAXLINE);
+	write(sockfd, buf_read, MAXLINE);
 
-	// fork
-	n = fork();
+	pthread_t tid;
+	pthread_create(&tid, 0, service_thread, NULL); //创建线程，用于发送信息，主线程用于接收信息
 
-	if (n == -1)
-	{ // fork失败
-		printf("Fork error!\n");
-		exit(1);
-	}
-	else if (n == 0)
-	{ //子进程：接收服务器端发送的信息
-		while (1)
+	while (1)
+	{
+		//如果客户端处于上传文件或下载状态，则将对应标志置1，客户端暂停接收并显示信息
+		if ((download == 1) || (upload == 1))
+			continue;
+		n = read(sockfd, buf_read, MAXLINE);
+		if ((download == 1) || (upload == 1))
+			continue;
+
+		if (n == 0)
 		{
-			n = read(sockfd, buf, MAXLINE);
-			if (n == 0)
-			{
-				printf("The server has been closed.\n");
-				break;
-			}
-			puts(buf);
+			printf("The server has been closed.\n");
+			break;
 		}
-	}
-	else
-	{ //父进程：发送用户输入的信息
-		while (fgets(buf, MAXLINE, stdin) != NULL)
-		{
-			if (strcmp(buf, "/downfile") == 0)
-			{
-				downfile(buf);
-			}
-			else if (strcmp(buf, "/upfile") == 0)
-			{
-				upfile(buf);
-			}
-			else if (strcmp(buf, "/private") == 0)
-			{
-				private_chat(buf);
-			}
-			else if (strcmp(buf, "/quit") == 0)
-			{
-				close(sockfd);
-				exit(0);
-			}
-			else
-			{
-				write(sockfd, buf, MAXLINE);
-				memset(buf, 0, sizeof(buf));
-			}
-		}
-
-		close(sockfd);
+		puts(buf_read);
 	}
 	return 0;
 }
 
 /*****Definition of functions*****/
+void *service_thread(void *p)
+{
+	while (fgets(buf_write, MAXLINE, stdin) != NULL)
+	{
+		buf_write[strlen(buf_write) - 1] = 0; // fgets会读入回车符，因此需要手动将末尾回车符设置为EOF(0)
+		if (strcmp(buf_write, "/downfile") == 0)
+		{
+			download = 1;
+			downfile(buf_write);
+			download = 0;
+		}
+		else if (strcmp(buf_write, "/upfile") == 0)
+		{
+			upload = 1;
+			upfile(buf_write);
+			upload = 0;
+		}
+		else if (strcmp(buf_write, "/private") == 0)
+		{
+			private_chat(buf_write);
+		}
+		else if (strcmp(buf_write, "/quit") == 0)
+		{
+			close(sockfd);
+			exit(0);
+		}
+		else
+		{
+			write(sockfd, buf_write, MAXLINE);
+			memset(buf_write, 0, sizeof(buf_write));
+		}
+	}
+	pthread_exit(NULL); //退出此线程
+	close(sockfd);
+}

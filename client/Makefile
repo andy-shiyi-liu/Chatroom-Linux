@@ -1,10 +1,10 @@
 all: client server
 
 client: client_v2.c
-	gcc -o $@ $^
+	gcc -w -pthread -o client_v2 $^
 	
-server: server_v2_1.c server_v2.h
-	gcc -w -pthread -o $@ $^
+# server: server_v2_1.c server_v2.h
+# 	gcc -w -pthread -o $@ $^
 
 clean:
-	rm -f server client
+	rm -f client_v2 client_v2_t
