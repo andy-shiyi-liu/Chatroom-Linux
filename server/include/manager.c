@@ -78,6 +78,7 @@ void kick(char *buf, const int uid, char *BrdMsg)
             users[i].ban = false;
             users[i].id = 0;
             users[i].tid = 0;
+            usernum--;
 
             return;
         }

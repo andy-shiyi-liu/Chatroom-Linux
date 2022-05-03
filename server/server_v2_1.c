@@ -191,7 +191,13 @@ void *service_thread(void *useri)
 			memset(buf, 0, sizeof(char) * MAXLINE);
 			memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 
-			users[i].id = 0; //清除当前用户id
+			// set user info to init state
+			users[i].fd = 0;
+			users[i].name[0] = 0;
+			users[i].ip[0] = 0;
+			users[i].ban = false;
+			users[i].id = 0;
+			users[i].tid = 0;
 			usernum--;
 
 			pthread_exit(NULL); //退出此线程
