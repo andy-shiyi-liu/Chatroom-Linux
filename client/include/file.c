@@ -171,13 +171,18 @@ void checkdir(void)
 void getname(char file_path[], char file_name[])
 {
     // TODO: file_path = pure_path/file_name
-    int i, slash_pos;
+    int i, slash_pos = 0;
 
     //找到最后一个斜杠的位置，赋值给slash_pos
     for (i = 0; file_path[i] != 0; i++)
         if (file_path[i] == '/')
             slash_pos = i;
     //将最后一个slash之后的内容（文件名称）拷贝到file_name
+    if (slash_pos == 0) //如果文件路径中无'/'
+    {
+        strcpy(file_name, file_path);
+        return;
+    }
     strncpy(file_name, file_path + slash_pos + 1, strlen(file_path) - slash_pos - 1);
 }
 
