@@ -225,11 +225,11 @@ void *service_thread(void *useri)
 		}
 		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
 		{
-			at(buf, i, BrdMsg);   //qzj修改了这里的函数调用
-			/*printf("receive message: ");
-			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
-			send2all(BrdMsg, users[i].id);*/
+			at(buf, i, BrdMsg); // qzj修改了这里的函数调用
+								/*printf("receive message: ");
+								printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
+								sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
+								send2all(BrdMsg, users[i].id);*/
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{
@@ -269,7 +269,7 @@ void *service_thread(void *useri)
 		{
 			printf("receive message: ");
 			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-			sprintf(BrdMsg, "\033[37m%s:\t%s\033", users[i].name, buf);  //qzj修改了此处
+			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf); // qzj修改了此处
 			send2all(BrdMsg, users[i].id);
 		}
 		memset(buf, 0, sizeof(char) * MAXLINE);
