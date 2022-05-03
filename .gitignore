@@ -1,7 +1,12 @@
 # excutables
 server/server_v2_1
 client/client_v2
+
+# file upload/download folders
 client/files/
 server/files/
-.vscode/
 /client/local
+files/
+
+# config files
+.vscode/
