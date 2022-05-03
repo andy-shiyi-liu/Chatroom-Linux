@@ -225,7 +225,11 @@ void *service_thread(void *useri)
 		}
 		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
 		{
-			at(buf);
+			at(buf, i, BrdMsg);   //qzj修改了这里的函数调用
+			/*printf("receive message: ");
+			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
+			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
+			send2all(BrdMsg, users[i].id);*/
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{

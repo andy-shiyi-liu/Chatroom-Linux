@@ -13,7 +13,7 @@
 
 /*****Define*****/
 #define MAXLINE 80
-#define SERV_ADDR "127.0.0.1"
+#define SERV_ADDR "101.42.141.88"
 #define SERV_PORT 8000
 #define MAXNAME 20
 
