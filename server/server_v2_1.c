@@ -31,7 +31,7 @@ void send2all(char *msg, int current_id);
 /*****Define*****/
 #define VERSION "2.1"
 #define MAXLINE 80	   // buf的容量
-#define SERV_PORT 8000 //服务器端口号
+#define SERV_PORT 8001 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
 #define true 1
 #define false 0
@@ -197,7 +197,11 @@ void *service_thread(void *useri)
 		}
 		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
 		{
-			at(buf);
+			at(buf, i, BrdMsg);   //qzj修改了这里的函数调用
+			/*printf("receive message: ");
+			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
+			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
+			send2all(BrdMsg, users[i].id);*/
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{
