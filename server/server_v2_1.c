@@ -33,6 +33,7 @@ void send2all(char *msg, int current_id);
 #define MAXLINE 80	   // buf的容量
 #define SERV_PORT 8000 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
+#define MAXNAME 20  //最长用户昵称
 #define true 1
 #define false 0
 
@@ -52,9 +53,15 @@ int connfd;
 struct sockaddr_in cliaddr;
 socklen_t cliaddr_len;
 
+struct fileinfo files[MAXFILENUM];// files变量
+int fileid; //文件id计数器，只增不减，原理同userid
+
 /*****main*****/
 int main()
 {
+	//识别./files/目录下现有的文件，加入文件列表
+	file_init();
+	
 	struct sockaddr_in servaddr;
 	int listenfd;
 	char buf[MAXLINE];
@@ -201,11 +208,17 @@ void *service_thread(void *useri)
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{
-			upfile(buf);
+			write(users[i].fd, "CONTINUE", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
+			upfile(i);
 		}
 		else if (strcmp(buf, "/downfile") == 0) // download file to local
 		{
-			downfile(buf);
+			write(users[i].fd, "CONTINUE", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
+			downfile(i);
+		}
+		else if (strcmp(buf, "/listfile") == 0)//向客户端发送文件列表
+		{
+			listfile(i);
 		}
 		else if (strcmp(buf, "/kick") == 0) // kick s.b. out
 		{
