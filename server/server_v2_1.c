@@ -229,7 +229,7 @@ void *service_thread(void *useri)
 		}
 		else if (strcmp(buf, "/listuser") == 0)
 		{
-			listuser(buf);
+			listuser(buf, i, BrdMsg);    //qzj修改了函数调用
 		}
 		else
 		{
