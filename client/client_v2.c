@@ -29,12 +29,6 @@ char buf_read[MAXLINE], buf_write[MAXLINE];
 #include "./include/listuser.c"
 #include "./include/private.c"
 
-/*****Define*****/
-#define MAXLINE 80
-#define SERV_ADDR "101.42.141.88"
-#define SERV_PORT 8000
-#define MAXNAME 20
-
 /*****Declaration of functions*****/
 void *service_thread(void *);
 

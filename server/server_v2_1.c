@@ -269,7 +269,7 @@ void *service_thread(void *useri)
 		{
 			printf("receive message: ");
 			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-			sprintf(BrdMsg, "%s:\t\033[37m%s\033", users[i].name, buf);  //qzj修改了此处
+			sprintf(BrdMsg, "\033[37m%s:\t%s\033", users[i].name, buf);  //qzj修改了此处
 			send2all(BrdMsg, users[i].id);
 		}
 		memset(buf, 0, sizeof(char) * MAXLINE);

@@ -57,8 +57,8 @@ void at(char *buf, const int uid, char *BrdMsg)
     fine_name(buf, uid);
 
     for (int i = 0; i < MAXCAPACITY; i++)
-	{   
-        if (i == uid)   
+    {
+        if (i == uid)
             continue;
         else if (users[i].at)
         {
@@ -67,12 +67,11 @@ void at(char *buf, const int uid, char *BrdMsg)
         else
         {
             sprintf(BrdMsg, "\033[37m%s:\t%s\033", users[uid].name, buf);
-        }            
-		
+        }
+
         write(users[i].fd, BrdMsg, MAXLINE);
-        
-	}
-    for(int i = 0; i < MAXCAPACITY; i++)
+    }
+    for (int i = 0; i < MAXCAPACITY; i++)
     {
         users[i].at = 0;
     }
