@@ -32,3 +32,4 @@ void upfile(const int uid);
 void downfile(const int uid);
 void file_init(void);
 void listfile(int i);
+void checkdir(void);

@@ -59,6 +59,7 @@ void upfile(const int uid)
     bzero(filepath, FILE_PATH_LEN);
     sprintf(filepath, "./files/%s", files[i].name);
 
+    checkdir();
     int fp = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (fp <= 0)
     {
@@ -163,12 +164,8 @@ void file_init(void) //读取目录下的文件，并将信息填入files结构�
     int fd;
     char filepath[FILE_PATH_LEN];
 
+    checkdir();
     dp = opendir(dirname);
-    if (dp == NULL) //若无files目录则创建之
-    {
-        mkdir(dirname, 0777);
-        dp = opendir(dirname);
-    }
 
     while ((filename = readdir(dp)) != NULL)
     {
@@ -213,4 +210,15 @@ int str2int(char *str)
     for (i = 0; str[i] != 0; i++)
         num = 10 * num + str[i] - '0';
     return num;
+}
+
+void checkdir(void)
+{
+    const char dirname[20] = "./files/";
+    DIR *dp = opendir(dirname);
+
+    if (dp == NULL) //若无files目录则创建之
+    {
+        mkdir(dirname, 0777);
+    }
 }
