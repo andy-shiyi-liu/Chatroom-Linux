@@ -29,12 +29,6 @@ char buf_read[MAXLINE], buf_write[MAXLINE];
 #include "./include/listuser.c"
 #include "./include/private.c"
 
-/*****Define*****/
-#define MAXLINE 80
-#define SERV_ADDR "101.42.141.88"
-#define SERV_PORT 8000
-#define MAXNAME 20
-
 /*****Declaration of functions*****/
 void *service_thread(void *);
 
@@ -71,6 +65,7 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		//如果客户端处于上传文件或下载状态，则将对应标志置1，客户端暂停接收并显示信息
+		// bzero(buf_read, MAXLINE);
 		if ((download == 1) || (upload == 1))
 			continue;
 		n = read(sockfd, buf_read, MAXLINE);
@@ -96,13 +91,13 @@ void *service_thread(void *p)
 		if (strcmp(buf_write, "/downfile") == 0)
 		{
 			download = 1;
-			downfile(buf_write);
+			downfile();
 			download = 0;
 		}
 		else if (strcmp(buf_write, "/upfile") == 0)
 		{
 			upload = 1;
-			upfile(buf_write);
+			upfile();
 			upload = 0;
 		}
 		else if (strcmp(buf_write, "/private") == 0)

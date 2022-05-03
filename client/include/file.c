@@ -1,6 +1,6 @@
 #include "file.h"
 
-void upfile(char *buf)
+void upfile(void)
 {
     /* TODO:
     1. 输入文件路径
@@ -11,6 +11,9 @@ void upfile(char *buf)
 
     char temp[3];
     char file_path[FILE_PATH_LEN], file_name[FILE_NAME_LEN] = {0};
+
+    char buf[MAXLINE];
+    bzero(buf, MAXLINE);
 
     //询问用户想要上传的文件路径
     printf("Enter file path: ");
@@ -26,7 +29,7 @@ void upfile(char *buf)
         return;
     }
 
-    write(sockfd, buf, sizeof(buf)); //成功打开文件后，将/upfile命令发送给服务器，以供其识别
+    write(sockfd, "/upfile", MAXLINE); //成功打开文件后，将/upfile命令发送给服务器，以供其识别
 
     //接收服务器端文件库是否满的信息
     read(sockfd, buf, MAXLINE);
@@ -37,7 +40,7 @@ void upfile(char *buf)
     }
 
     //发送文件头（大小和名称）
-    struct fileinfo file; 
+    struct fileinfo file;
     memset(file.name, 0, sizeof(file.name));
     getname(file_path, file.name);      //获取file的纯名称
     file.size = lseek(fp, 0, SEEK_END); //计算文件大小
@@ -51,6 +54,14 @@ void upfile(char *buf)
 
     // read(sockfd, temp, sizeof(temp)); //阻塞，等待服务器“可以发送”命令
     write(sockfd, filehead, sizeof(filehead));
+
+    //接受服务器端是否重名NAME_REPEAT的信息，若是，则中断上传
+    read(sockfd, buf, MAXLINE);
+    if (strcmp(buf, "NAME_REPEAT") == 0)
+    {
+        printf("File name '%s' repeat!\n", file.name);
+        return;
+    }
 
     //发送文件
     int sent_len = 0;           //已发送的大小
@@ -69,20 +80,24 @@ void upfile(char *buf)
         }
         sent_len += read_len;
 
-        read(sockfd, temp, sizeof(temp)); //阻塞，等待服务器“可以发送”命令
-        write(sockfd, filebuf, read_len); //发送给server
+        write(sockfd, filebuf, read_len); //将文件内容发送给server
+        // read(sockfd, temp, sizeof(temp)); //阻塞，等待服务器“可以发送”命令
 
         printf("Uploading %.2f%%\n", (float)sent_len / file.size * 100); //显示上传文件的百分比
     }
     close(fp);
 }
 
-void downfile(char *buf)
+void downfile(void)
 {
+    checkdir(); //检查files目录是否存在，若无则创建之
 
     char file_name[FILE_NAME_LEN] = {0};
 
-    write(sockfd, buf, MAXLINE); //将/downfile指令发送给服务器端
+    char buf[MAXLINE];
+    bzero(buf, MAXLINE);
+
+    write(sockfd, "/downfile", MAXLINE); //将/downfile指令发送给服务器端
 
     printf("Enter file name to download:");
     fgets(file_name, FILE_NAME_LEN, stdin);
@@ -106,7 +121,7 @@ void downfile(char *buf)
     int file_size;
     char filesize_str[FILE_SIZE_LEN] = {0};
 
-    write(sockfd, "//", 3); //告知服务器可以发送
+    // write(sockfd, "//", 3); //告知服务器可以发送
     read(sockfd, filesize_str, FILE_SIZE_LEN);
     file_size = str2int(filesize_str);
     printf("Receiving file '%s', size=%d\n", file_name, file_size);
@@ -123,13 +138,14 @@ void downfile(char *buf)
     int read_len;     //一次read的文件大小
     char filebuf[FILE_BUF_LEN];
 
-    write(sockfd, "//", 3); //告知服务器可以发送
+    // write(sockfd, "//", 3); //告知服务器可以发送
     while (1)
     {
         read_len = read(sockfd, filebuf, FILE_BUF_LEN);
 
         recv_len += read_len;
         printf("Receiving %.2f%%\n", (float)recv_len / file_size * 100);
+        write(fp, filebuf, read_len);
 
         if (recv_len == file_size) //传输完成
         {
@@ -137,9 +153,18 @@ void downfile(char *buf)
             close(fp);
             break;
         }
+        // write(sockfd, "//", 3); //告知服务器可以发送
+    }
+}
 
-        write(fp, filebuf, read_len);
-        write(sockfd, "//", 3); //告知服务器可以发送
+void checkdir(void)
+{
+    const char dirname[20] = "./files/";
+    DIR *dp = opendir(dirname);
+
+    if (dp == NULL) //若无files目录则创建之
+    {
+        mkdir(dirname, 0777);
     }
 }
 

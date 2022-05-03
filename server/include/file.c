@@ -23,16 +23,30 @@ void upfile(const int uid)
 
     if (i == MAXFILENUM) //若文件库已满，告知客户端中断传输
     {
-        write(users[uid].fd, "FULL", MAXLINE);
+        write(users[uid].fd, "FULL", strlen("FULL"));
         return;
     }
     else //若文件库未满，也告知客户端继续传输
     {
-        write(users[uid].fd, "OK", MAXLINE); //不会在客户端打印
+        write(users[uid].fd, "FULL_OK", strlen("FULL_OK")); //不会在客户端打印
     }
 
     // write(users[uid].fd, "//", 3);                   //告知客户端可以发送
     read(users[uid].fd, filehead, sizeof(filehead)); //读入文件头
+
+    //判断文件是否重名，若重名则告知客户端，中断上传
+    int temp_i; //防止变量i被更改
+    char temp_name[FILE_NAME_LEN];
+    strcpy(temp_name, filehead + FILE_SIZE_LEN); //暂存文件名
+    for (temp_i = 0; temp_i < MAXFILENUM; temp_i++)
+    {
+        if (files[temp_i].id != 0 && strcmp(files[temp_i].name, temp_name) == 0)
+        {
+            write(users[uid].fd, "NAME_REPEAT", strlen("NAME_REPEAT"));
+            return;
+        }
+    }
+    write(users[uid].fd, "NAME_OK", strlen("NAME_OK")); //无重复，发送OK信号
 
     files[i].size = str2int(filehead);               //文件大小
     strcpy(files[i].name, filehead + FILE_SIZE_LEN); //文件名
@@ -56,14 +70,17 @@ void upfile(const int uid)
     int recv_len = 0; //已接收的文件大小
     int read_len;     //一次read操作的文件大小
     char filebuf[FILE_BUF_LEN];
-    write(users[uid].fd, "//", 3); //告知客户端可以发送
+    // write(users[uid].fd, "//", 3); //告知客户端可以发送
     while (1)
     {
+        bzero(filebuf, FILE_BUF_LEN);
         read_len = read(users[uid].fd, filebuf, FILE_BUF_LEN);
 
         recv_len += read_len;
-        printf("Receiving %.2f%%\n", (float)recv_len / files[i].size * 100);
+        printf("Receiving '%s' %.2f%%\n", files[i].name, (float)recv_len / files[i].size * 100);
+        write(fp, filebuf, read_len);
 
+        // write(users[uid].fd, "//", 3); //告知客户端可以发送
         if (recv_len == files[i].size) //传输完成
         {
             printf("Receive file '%s' succeed!\n", files[i].name);
@@ -71,9 +88,6 @@ void upfile(const int uid)
             files[i].id = ++fileid; //上传完成后，将file id计数器+1，并设置文件id
             break;
         }
-        write(fp, filebuf, read_len);
-
-        write(users[uid].fd, "//", 3); //告知客户端可以发送
     }
 }
 
@@ -114,7 +128,7 @@ void downfile(const int uid)
     bzero(filesize_str, FILE_SIZE_LEN);
     sprintf(filesize_str, "%d", files[i].size);
 
-    read(users[uid].fd, temp, sizeof(temp)); //阻塞，等待客户端“可以发送”命令
+    // read(users[uid].fd, temp, sizeof(temp)); //阻塞，等待客户端“可以发送”命令
     write(users[uid].fd, filesize_str, sizeof(filesize_str));
 
     //发送文件
@@ -134,7 +148,7 @@ void downfile(const int uid)
         }
         sent_len += read_len;
 
-        read(users[uid].fd, temp, sizeof(temp)); //阻塞，等待客户端“可以发送”命令
+        // read(users[uid].fd, temp, sizeof(temp)); //阻塞，等待客户端“可以发送”命令
         write(users[uid].fd, filebuf, read_len); //发送给客户端
     }
     close(fp);
@@ -143,11 +157,18 @@ void downfile(const int uid)
 void file_init(void) //读取目录下的文件，并将信息填入files结构体数组
 {
     const char dirname[20] = "./files/";
-    DIR *dp = opendir(dirname);
+    DIR *dp;
     struct dirent *filename;
     int i = 0;
     int fd;
     char filepath[FILE_PATH_LEN];
+
+    dp = opendir(dirname);
+    if (dp == NULL) //若无files目录则创建之
+    {
+        mkdir(dirname, 0777);
+        dp = opendir(dirname);
+    }
 
     while ((filename = readdir(dp)) != NULL)
     {

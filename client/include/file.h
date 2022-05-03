@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #define FILE_PATH_LEN 128
 #define FILE_SIZE_LEN 16
@@ -25,6 +26,7 @@ struct fileinfo
 };
 
 void getname(char file_path[], char file_name[]);
-void upfile(char *buf);
-void downfile(char *buf);
+void upfile(void);
+void downfile(void);
 int str2int(char *str);
+void checkdir(void);
