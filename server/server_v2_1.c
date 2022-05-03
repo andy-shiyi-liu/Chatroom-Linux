@@ -191,6 +191,8 @@ void *service_thread(void *useri)
 			memset(buf, 0, sizeof(char) * MAXLINE);
 			memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 
+			close(users[i].fd);
+
 			// set user info to init state
 			users[i].fd = 0;
 			users[i].name[0] = 0;

@@ -1,6 +1,7 @@
 #include "manager.h"
 
 extern struct userinfo users[MAXCAPACITY];
+extern int usernum;
 
 void kick(char *buf, const int uid, char *BrdMsg)
 {
