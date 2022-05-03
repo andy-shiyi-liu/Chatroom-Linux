@@ -38,6 +38,13 @@ void kick(char *buf, const int uid, char *BrdMsg)
     {
         if (strcmp(buf, users[i].name) == 0)
         {
+            if (i == uid)
+            {
+                strcpy(buf, "\033[31mYou are kicking yourself. Use /quit instead.\033[37m");
+                write(users[uid].fd, buf, MAXLINE);
+                return;
+            }
+
             int threadCancelState = pthread_cancel(users[i].tid);
             if (threadCancelState != 0)
             {

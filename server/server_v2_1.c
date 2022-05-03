@@ -33,7 +33,7 @@ void send2all(char *msg, int current_id);
 #define MAXLINE 80	   // buf的容量
 #define SERV_PORT 8000 //服务器端口号
 #define MAXCAPACITY 30 //聊天室最大用户数量
-#define MAXNAME 20  //最长用户昵称
+#define MAXNAME 20	   //最长用户昵称
 #define true 1
 #define false 0
 
@@ -53,15 +53,15 @@ int connfd;
 struct sockaddr_in cliaddr;
 socklen_t cliaddr_len;
 
-struct fileinfo files[MAXFILENUM];// files变量
-int fileid; //文件id计数器，只增不减，原理同userid
+struct fileinfo files[MAXFILENUM]; // files变量
+int fileid;						   //文件id计数器，只增不减，原理同userid
 
 /*****main*****/
 int main()
 {
 	//识别./files/目录下现有的文件，加入文件列表
 	file_init();
-	
+
 	struct sockaddr_in servaddr;
 	int listenfd;
 	char buf[MAXLINE];
@@ -124,7 +124,6 @@ void *service_thread(void *useri)
 	const int i = *(int *)useri;
 	int n;
 	char buf[MAXLINE], BrdMsg[MAXLINE]; // BrdMsg存储需要广播的信息
-	int repeated_name = true;
 
 	//用户信息配置
 	users[i].fd = connfd;	// users.fd
@@ -143,6 +142,7 @@ void *service_thread(void *useri)
 	read(users[i].fd, buf, MAXLINE); //接收用户传来的昵称名信息
 	delete_tail_enter(buf);
 
+	int repeated_name = true;
 	while (repeated_name == true)
 	{
 		repeated_name = false;
@@ -237,7 +237,7 @@ void *service_thread(void *useri)
 			write(users[i].fd, "CONTINUE", MAXLINE); //无意义，只是为了冲掉client端“读”线程的read
 			downfile(i);
 		}
-		else if (strcmp(buf, "/listfile") == 0)//向客户端发送文件列表
+		else if (strcmp(buf, "/listfile") == 0) //向客户端发送文件列表
 		{
 			listfile(i);
 		}
