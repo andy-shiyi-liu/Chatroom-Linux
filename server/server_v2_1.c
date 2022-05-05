@@ -44,6 +44,7 @@ void send2all(char *msg, int current_id);
 #include "./include/file.c"
 #include "./include/listuser.c"
 #include "./include/private.c"
+#include "./include/sendone.c"
 
 /*****Extern Variables*****/
 struct userinfo users[MAXCAPACITY]; //结构体变量users储存已连接用户的昵称和ip地址
@@ -177,6 +178,9 @@ void *service_thread(void *useri)
 	sprintf(BrdMsg, "You have entered the chatroom, uid=%d", users[i].id);
 	write(users[i].fd, BrdMsg, MAXLINE); //将“你”称呼的版本发给当前用户
 
+	int toall = 1;
+	int getname = 0;
+	int temp = 0;
 	memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	memset(buf, 0, sizeof(char) * MAXLINE);
 
@@ -271,13 +275,64 @@ void *service_thread(void *useri)
 		{
 			unban(buf, i, BrdMsg);
 		}
-		else if (buf[0] == '&') // private chat e.p. "&syl <messsage>"
+		else if (strcmp(buf, "/toall") == 0) // quit private chat
 		{
-			private_chat(buf);
+			char msg[150] = {};
+			strcpy(msg, "您已退出私聊模式。");
+			sendone(msg, users[i].fd, i);
+			toall = 1;
+		}
+		else if (strcmp(buf, "/private") == 0) // enter private chat
+		{
+			toall = 0;
+			getname = 1;
+			char msg[150] = {};
+			strcpy(msg, "您已选择向特定用户发送信息模式，请输入您想私戳的用户");
+			sendone(msg, users[i].fd, i);
+		}
+		else if (toall == 0) // continue to the private chat
+		{
+			if (getname == 1)
+			{
+				for (temp = 0; temp < usernum; temp++)
+				{
+					if (strcmp(users[temp].name, buf) == 0)
+					{ //查找私戳对象
+						getname = 0;
+						break;
+					}
+				}
+				if (temp == usernum)
+				{ //用户查找失败，重新查找
+					char *str = "您输入的名称不存在，请重新输入！";
+					sendone(str, users[i].fd, i);
+					getname = 1;
+				}
+			}
+			else
+			{
+				getname = 0;
+				if (strcmp(users[temp].name, buf) == 0)
+				{								   //用户查找成功，进行私戳
+					strcpy(buf, "向您发起私戳。"); //向对方发出私戳邀请
+				}
+				sendone(buf, users[temp].fd, i);
+				sendone("\n", users[temp].fd, i);
+
+				//若要判断用户状态，可改这段代码
+				/*if(users[temp].fd == 1){
+					sendone(buf,users[temp].fd,temp);
+				}
+				else{
+					strcpy(buf,"私戳客户正在下载文件，请稍后");
+					sendone(buf, users[i].fd,i);
+					toall = 1;
+				}*/
+			}
 		}
 		else if (strcmp(buf, "/listuser") == 0)
 		{
-			listuser(buf, i, BrdMsg);    //qzj修改了函数调用
+			listuser(buf, i, BrdMsg); // qzj修改了函数调用
 		}
 		else
 		{

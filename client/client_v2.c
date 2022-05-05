@@ -100,10 +100,10 @@ void *service_thread(void *p)
 			upfile();
 			upload = 0;
 		}
-		else if (strcmp(buf_write, "/private") == 0)
-		{
-			private_chat(buf_write);
-		}
+		// else if (strcmp(buf_write, "/private") == 0)
+		// {
+		// 	private_chat(buf_write);
+		// }
 		else if (strcmp(buf_write, "/quit") == 0)
 		{
 			close(sockfd);
