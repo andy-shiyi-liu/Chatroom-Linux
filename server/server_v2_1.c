@@ -316,8 +316,9 @@ void *service_thread(void *useri)
 				{								   //用户查找成功，进行私戳
 					strcpy(buf, "向您发起私戳。"); //向对方发出私戳邀请
 				}
+				delete_tail_enter(buf);
 				sendone(buf, users[temp].fd, i);
-				sendone("\n", users[temp].fd, i);
+				// sendone("\n", users[temp].fd, i);
 
 				//若要判断用户状态，可改这段代码
 				/*if(users[temp].fd == 1){
