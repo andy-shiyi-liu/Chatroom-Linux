@@ -195,13 +195,9 @@ void *service_thread(void *useri)
 				continue;
 			}
 		}
-		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
+		else if (buf[0] == '@') //@ sb to send private highlight message. 
 		{
-			at(buf, i, BrdMsg);   //qzj修改了这里的函数调用
-			/*printf("receive message: ");
-			printf("%s(uid=%d):%s\n", users[i].name, users[i].id, buf);
-			sprintf(BrdMsg, "%s:\t%s", users[i].name, buf);
-			send2all(BrdMsg, users[i].id);*/
+			at(buf, i, BrdMsg);   
 		}
 		else if (strcmp(buf, "/upfile") == 0) // upload file to server
 		{
@@ -223,13 +219,60 @@ void *service_thread(void *useri)
 		{
 			unban(buf, i, BrdMsg);
 		}
-		else if (buf[0] == '&') // private chat e.p. "&syl <messsage>"
+		else if (strcmp(buf, "/toall") == 0) // quit private chat
 		{
-			private_chat(buf);
+			char msg[150] = {};
+			strcpy(msg,"您已退出私聊模式。");   
+            sendone(msg, users[i].fd,i); 
+			toall=1;
+		}
+		else if (strcmp(buf, "/private") == 0)//enter private chat
+		{
+			toall=0;
+			getname=1;
+			char msg[150] = {};
+			strcpy(msg,"您已选择向特定用户发送信息模式，请输入您想私戳的用户");   		
+            sendone(msg, users[i].fd,i); 
+		}
+		else if(toall==0) //continue to the private chat
+		{
+			if(getname==1)
+			{
+    			for(temp = 0; temp <usernum; temp++)
+				{
+        			if(strcmp(users[temp].name,buf) == 0){    //查找私戳对象
+            			getname=0;	
+						break;
+					}
+				}
+				if(temp == usernum)
+				   {       //用户查找失败，重新查找
+                	char *str = "您输入的名称不存在，请重新输入！";
+                	sendone(str, users[i].fd,i);
+                	getname = 1;
+            	   }
+				else
+			       {
+				    sprintf(buf,"%s向您发起私戳。",users[i].name);  //向对方发出私戳邀请
+					sendone(buf,users[temp].fd,i);
+                   }
+			}
+			else
+			{
+				sendone(buf,users[temp].fd,i);
+			}
+			/*else
+			{
+                if(strcmp(users[temp].name,buf)==0){     //用户查找成功，进行私戳
+				    strcpy(buf,"向您发起私戳。");  //向对方发出私戳邀请
+                }
+				sendone(buf,users[temp].fd,i);
+				//sendone("\n",users[temp].fd,i);
+            }*/
 		}
 		else if (strcmp(buf, "/listuser") == 0)
 		{
-			listuser(buf, i, BrdMsg);    //qzj修改了函数调用
+			listuser(buf, i, BrdMsg);    
 		}
 		else
 		{
@@ -242,6 +285,7 @@ void *service_thread(void *useri)
 		memset(BrdMsg, 0, sizeof(char) * MAXLINE);
 	}
 }
+
 
 // delete_tail_enter删除读取buf时读入的字符串末尾回车
 void delete_tail_enter(char *string)

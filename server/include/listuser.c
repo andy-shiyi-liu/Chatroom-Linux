@@ -30,5 +30,4 @@ void listuser(char *buf, const int uid, char *BrdMsg)
         }
         write(users[uid].fd, BrdMsg, MAXLINE);
     }
-        // ref: call private_chat() to send message
 }
