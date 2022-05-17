@@ -237,7 +237,7 @@ void *service_thread(void *useri)
 				continue;
 			}
 		}
-		else if (buf[0] == '@') //@ sb to send private highlight message. e.p. "@syl <messsage>"
+		else if (buf[0] == '@') //@ sb to send private highlight message.
 		{
 			at(buf, i, BrdMsg); // qzj修改了这里的函数调用
 								/*printf("receive message: ");
@@ -308,32 +308,28 @@ void *service_thread(void *useri)
 					sendone(str, users[i].fd, i);
 					getname = 1;
 				}
+				else
+				{
+					sprintf(buf, "%s向您发起私戳。", users[i].name); //向对方发出私戳邀请
+					sendone(buf, users[temp].fd, i);
+				}
 			}
 			else
 			{
-				getname = 0;
-				if (strcmp(users[temp].name, buf) == 0)
-				{								   //用户查找成功，进行私戳
-					strcpy(buf, "向您发起私戳。"); //向对方发出私戳邀请
-				}
-				delete_tail_enter(buf);
 				sendone(buf, users[temp].fd, i);
-				// sendone("\n", users[temp].fd, i);
-
-				//若要判断用户状态，可改这段代码
-				/*if(users[temp].fd == 1){
-					sendone(buf,users[temp].fd,temp);
-				}
-				else{
-					strcpy(buf,"私戳客户正在下载文件，请稍后");
-					sendone(buf, users[i].fd,i);
-					toall = 1;
-				}*/
 			}
+			/*else
+			{
+				if(strcmp(users[temp].name,buf)==0){     //用户查找成功，进行私戳
+					strcpy(buf,"向您发起私戳。");  //向对方发出私戳邀请
+				}
+				sendone(buf,users[temp].fd,i);
+				//sendone("\n",users[temp].fd,i);
+			}*/
 		}
 		else if (strcmp(buf, "/listuser") == 0)
 		{
-			listuser(buf, i, BrdMsg); // qzj修改了函数调用
+			listuser(buf, i, BrdMsg);
 		}
 		else
 		{
